@@ -1,14 +1,15 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export var usePhotoStore = create(function (set, get) {
   return {
     photos: [],
     loading: false,
     error: null,
-    viewMode: 'combined',
+    viewMode: "combined",
     mapBoundsFilter: null,
     timeFilter: null,
     selectedIndex: -1,
+    theme: "ink",
 
     setPhotos: function (photos) { set({ photos: photos, loading: false, error: null }); },
     setLoading: function (loading) { set({ loading: loading }); },
@@ -20,6 +21,7 @@ export var usePhotoStore = create(function (set, get) {
     setMapBoundsFilter: function (bounds) { set({ mapBoundsFilter: bounds }); },
     setTimeFilter: function (key) { set({ timeFilter: key }); },
     setSelectedIndex: function (index) { set({ selectedIndex: index }); },
+    setTheme: function (theme) { set({ theme: theme }); },
     updatePhoto: function (path, nextPhoto) { set(function (state) { return { photos: state.photos.map(function (p) { return p.path === path ? Object.assign({}, p, nextPhoto) : p; }) }; }); },
 
     getGeotaggedPhotos: function () {
@@ -27,5 +29,3 @@ export var usePhotoStore = create(function (set, get) {
     }
   };
 });
-
-

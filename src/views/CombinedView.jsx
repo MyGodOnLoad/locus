@@ -5,6 +5,7 @@ import PhotoCard from '../components/PhotoCard';
 import PhotoLightbox from '../components/PhotoLightbox';
 
 var MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+var COLUMN_OPTIONS = [2, 3, 4, 5];
 
 function CombinedView() {
   var photos = usePhotoStore(function (s) { return s.photos; });
@@ -13,6 +14,7 @@ function CombinedView() {
   var _a = useState(null), drawerPhotos = _a[0], setDrawerPhotos = _a[1];
   var _b = useState(-1), lbIdx = _b[0], setLbIdx = _b[1];
   var _c = useState(0.4), drawerRatio = _c[0], setDrawerRatio = _c[1];
+  var _d = useState(3), cols = _d[0], setCols = _d[1];
   var scrollRef = useRef(null);
 
   var geotagged = useMemo(function () {
@@ -113,7 +115,21 @@ function CombinedView() {
                 &#x2715;
               </button>
             </div>
-            <div className="photo-drawer-wall">
+            <div className="zoom-controls" style={{ padding: "0 20px 8px" }}>
+          <span className="zoom-label">列</span>
+          {COLUMN_OPTIONS.map(function (n) {
+            return (
+              <button key={n} className={"zoom-btn" + (n === cols ? " active" : "")}
+                onClick={function () { setCols(n); }}>{n}</button>
+            );
+          })}
+          <input className="zoom-input" type="number" min="1" max="12" value={cols}
+            onChange={function (e) {
+              var v = parseInt(e.target.value, 10);
+              if (!isNaN(v) && v >= 1 && v <= 12) setCols(v);
+            }} />
+        </div>
+        <div className="photo-drawer-wall" style={{ columns: cols }}>
               {drawerPhotos.map(function (photo, idx) {
                 return (
                   <PhotoCard key={photo.id} photo={photo}

@@ -3,38 +3,16 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "electron:dev": "concurrently -k \"vite\" \"wait-on http://localhost:3000 && cross-env VITE_DEV_SERVER_URL=http://localhost:3000 electron .\"",
-    "electron:build": "vite build && electron-builder",
-    "electron:preview": "vite build && electron ."
-  },
-  "build": {
-    "electronDist": "node_modules/electron/dist",
-    "appId": "com.photoalbum.app",
-    "productName": "照片相册",    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "public/icon.png",
-      "package.json"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "public/icon.png"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "language": "2052"
-    }
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-dialog": "^2.4.0",
     "exifr": "^7.1.3",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
@@ -44,14 +22,10 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.8.4",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "concurrently": "^10.0.3",
-    "cross-env": "^7.0.3",
-    "electron": "^42.5.0",
-    "electron-builder": "^26.15.3",
-    "vite": "^5.4.0",
-    "wait-on": "^9.0.10"
+    "vite": "^5.4.0"
   }
 }

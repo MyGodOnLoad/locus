@@ -85,6 +85,8 @@ function App() {
             onClick={function () { setViewMode('lifemap'); }}>{'\u751f\u547d\u8f68\u8ff9'}</button>
           <button className={viewMode === 'trip-list' ? 'active' : ''}
             onClick={function () { setViewMode('trip-list'); }}>{'\u65c5\u884c'}</button>
+          <button className={viewMode === 'story' ? 'active' : ''}
+            onClick={function () { setViewMode('story'); }}>{'\u6545\u4e8b'}</button>
           <button className={viewMode === 'combined' ? 'active' : ''}
             onClick={function () { setViewMode('combined'); }}>{'\u5730\u56fe+\u65f6\u95f4\u8f74'}</button>
           <button className={viewMode === 'all-photos' ? 'active' : ''}

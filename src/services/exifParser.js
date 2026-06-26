@@ -32,7 +32,8 @@ export async function parseExif(arrayBuffer) {
       gps: true,
       tiff: true,
       exif: true,
-      translateKeys: true,
+      xmp: true,
+      translateKeys: false,
       translateValues: false
     });
 
@@ -61,17 +62,22 @@ export async function parseExif(arrayBuffer) {
       lat: lat,
       lng: lng,
       datetime: datetime,
-      make: data.make || data.Make || null,
-      model: data.model || data.Model || null,
-      width: data.imageWidth || data.ImageWidth || null,
-      height: data.imageHeight || data.ImageHeight || null,
-      orientation: data.orientation || data.Orientation || 1,
-      aperture: data.fNumber || data.FNumber || data.aperture || data.ApertureValue || null,
-      shutterSpeed: data.exposureTime || data.ExposureTime || data.shutterSpeed || data.ShutterSpeedValue || null,
-      iso: data.iso || data.ISO || null,
-      focalLength: data.focalLength || data.FocalLength || null,
-      flash: data.flash || data.Flash || null,
-      altitude: data.gpsAltitude || data.GPSAltitude || null
+      make: data.Make || data.make || null,
+      model: data.Model || data.model || null,
+      width: data.ImageWidth || data.imageWidth || null,
+      height: data.ImageHeight || data.imageHeight || null,
+      orientation: data.Orientation || data.orientation || 1,
+      aperture: data.FNumber || data.fNumber || data.ApertureValue || data.aperture || null,
+      shutterSpeed: data.ExposureTime || data.exposureTime || data.ShutterSpeedValue || data.shutterSpeed || null,
+      iso: data.ISO || data.iso || null,
+      focalLength: data.FocalLength || data.focalLength || null,
+      focalLength35mm: data.FocalLengthIn35mm || data.FocalLengthIn35mmFilm || data.focalLength35mm || null,
+      flash: data.Flash || data.flash || null,
+      exposureBias: data.ExposureCompensation || data.ExposureBiasValue || data.exposureCompensation || null,
+      meteringMode: data.MeteringMode || data.meteringMode || null,
+      exposureProgram: data.ExposureProgram || data.exposureProgram || null,
+      lensModel: data.LensModel || data.LensID || data.lensModel || null,
+      altitude: data.GPSAltitude || data.gpsAltitude || null
     };
   } catch (e) {
     return null;

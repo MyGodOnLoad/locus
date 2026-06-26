@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import MetadataEditor from './MetadataEditor';
+import ExifPanel from './ExifPanel';
+// remove-next-line from './MetadataEditor';
 
 function PhotoLightbox(props) {
   var photos = props.photos;
@@ -8,6 +10,7 @@ function PhotoLightbox(props) {
 
   var _a = useState(index), current = _a[0], setCurrent = _a[1];
   var _b = useState(false), editing = _b[0], setEditing = _b[1];
+  var _ex = useState(false), showExif = _ex[0], setShowExif = _ex[1];
 
   var goPrev = function () {
     setEditing(false);
@@ -45,8 +48,10 @@ function PhotoLightbox(props) {
           {photo.make ? ' \u00B7 ' + photo.make + (photo.model ? ' ' + photo.model : '') : ''}
           {' \u00B7 ' + (current + 1) + '/' + photos.length}
         </span>
-        <button className="lightbox-edit-btn" onClick={function () { setEditing(true); }}>校准信息</button>
+                <button className="lightbox-edit-btn" onClick={function () { setEditing(true); }}>{'\u6821\u51c6\u4fe1\u606f'}</button>
+        <button className="lightbox-edit-btn" onClick={function () { setShowExif(!showExif); }}>EXIF</button>
       </div>
+      {showExif ? <ExifPanel photo={photo} onClose={function () { setShowExif(false); }} /> : null}
       {editing ? <MetadataEditor photo={photo} onClose={function () { setEditing(false); }} /> : null}
     </div>
   );

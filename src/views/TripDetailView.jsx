@@ -6,6 +6,10 @@ import PhotoCard from '../components/PhotoCard';
 import PhotoLightbox from '../components/PhotoLightbox';
 import CorrectionPanel from '../components/CorrectionPanel';
 import TripNarrative from '../components/TripNarrative';
+import { createReplayController } from '../services/replayController';
+import { exportHtmlDiary, exportGpx } from '../services/tripExporter';
+import { saveAs } from 'file-saver';
+import ReplayController from '../components/ReplayController';
 
 function TripDetailView() {
   var setViewMode = usePhotoStore(function (s) { return s.setViewMode; });
@@ -19,6 +23,8 @@ function TripDetailView() {
   var initRef = useRef(false);
   var _lb = useState(-1), lbIdx = _lb[0], setLbIdx = _lb[1];
   var _cp = useState(false), showCorrection = _cp[0], setShowCorrection = _cp[1];
+  var _rp = useState(false), replayActive = _rp[0], setReplayActive = _rp[1];
+  var replayRef = useRef(null);
   var placeNames = usePhotoStore(function (s) { return s.placeNames; });
 
   if (!trip) {
@@ -81,27 +87,24 @@ function TripDetailView() {
     return function () { map.remove(); mapRef.current = null; };
   }, []);
 
-  // Draw trajectory
+  // Draw trajectory (only when NOT in replay mode)
   useEffect(function () {
+    if (replayActive) return;
     var map = mapRef.current;
     if (!map || !trip.path || trip.path.length < 2) return;
 
     var latlngs = trip.path.map(function (p) { return [p.lat, p.lng]; });
     var line = L.polyline(latlngs, { color: '#3b82f6', weight: 4, opacity: 0.9 }).addTo(map);
 
-    // Start/end markers
     var start = trip.path[0];
     var end = trip.path[trip.path.length - 1];
     L.circleMarker([start.lat, start.lng], { radius: 6, color: '#22c55e', fillColor: '#22c55e', fillOpacity: 1 }).addTo(map);
     L.circleMarker([end.lat, end.lng], { radius: 6, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1 }).addTo(map);
 
-    // Place name labels at key trajectory points
     if (placeNames) {
       var labelIndices = [0];
       if (trip.path.length > 1) labelIndices.push(trip.path.length - 1);
-      // Add midpoint if path is long enough
       if (trip.path.length > 4) labelIndices.push(Math.floor(trip.path.length / 2));
-
       labelIndices.forEach(function (idx) {
         var pt = trip.path[idx];
         var pk = pt.lat.toFixed(4) + ',' + pt.lng.toFixed(4);
@@ -122,13 +125,22 @@ function TripDetailView() {
       });
     }
 
-    // Fit bounds
     if (trip.boundingBox) {
       map.fitBounds([[trip.boundingBox.south, trip.boundingBox.west], [trip.boundingBox.north, trip.boundingBox.east]], { padding: [30, 30] });
     } else {
       map.fitBounds(line.getBounds(), { padding: [30, 30] });
     }
-  }, [trip, placeNames]);
+  }, [trip, placeNames, replayActive]);
+
+  // Initialize replay controller
+  useEffect(function () {
+    if (!replayActive || !mapRef.current || !trip.path || trip.path.length < 2) return;
+    var rp = createReplayController(trip, mapRef.current, {});
+    replayRef.current = rp;
+    return function () {
+      if (replayRef.current) { replayRef.current.stop(); replayRef.current = null; }
+    };
+  }, [replayActive]);
 
   var allPhotos = photos;
 
@@ -139,15 +151,34 @@ function TripDetailView() {
         <button className="back-btn" onClick={function () { setViewMode('trip-list'); }}>
           {'\u2190 \u65C5\u884C\u5217\u8868'}
         </button>
+        <button className="replay-trigger-btn" onClick={function () { setReplayActive(!replayActive); }} title={'\u65C5\u884C\u56DE\u653E'}>
+          {'\u25B6'}
+        </button>
         <div className="trip-detail-title">
           <h2>{name}</h2>
           <div className="trip-detail-meta">
             {startStr} {'\u2192'} {endStr} {'\u00B7'} {durationDays} {'\u5929'} {'\u00B7'} {photoCount} {'\u5F20\u7167\u7247'}
           </div>
         </div>
+        <div className="trip-detail-actions">
+          <button className="export-btn" onClick={function () {
+            exportHtmlDiary(trip, placeNames).then(function (html) {
+              var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+              saveAs(blob, (trip.displayName || 'travel-diary') + '.html');
+            }).catch(function (e) { console.error('Export failed:', e); });
+          }}>{'\u5BFC\u51FA\u65C5\u884C\u65E5\u8BB0'}</button>
+          <button className="export-btn" onClick={function () {
+            var gpx = exportGpx(trip);
+            if (!gpx) return;
+            var blob = new Blob([gpx], { type: 'application/gpx+xml;charset=utf-8' });
+            saveAs(blob, (trip.displayName || 'track') + '.gpx');
+          }}>{'\u5BFC\u51FA GPX'}</button>
+        </div>
       </div>
 
       <TripNarrative trip={trip} />
+
+      {replayActive ? <ReplayController controller={replayRef.current} onExit={function () { setReplayActive(false); }} /> : null}
 
       <div className="trip-detail-map">
         <div ref={containerRef} className="map-inner" />

@@ -3,6 +3,7 @@ import TripListView from '../views/TripListView';
 import TripDetailView from '../views/TripDetailView';
 import CombinedView from '../views/CombinedView';
 import AllPhotosView from '../views/AllPhotosView';
+import StoryView from '../views/StoryView';
 
 function ViewRouter(props) {
   var viewMode = props.viewMode;
@@ -15,6 +16,7 @@ function ViewRouter(props) {
     case 'trip-list': return <TripListView />;
     case 'trip-detail': return <TripDetailView />;
     case 'combined': return <CombinedView />;
+    case 'story': return <StoryView />;
     case 'all-photos': return <AllPhotosView />;
     default: return <LifemapView />;
   }

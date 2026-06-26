@@ -1333,3 +1333,23 @@ html[data-theme="dark"] .photo-card:hover {
   outline: none;
 }
 .trip-sort-select:focus { border-color: var(--accent); }
+
+/* Amap key input in settings */
+.amap-key-input {
+  width: 100%; padding: 6px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; outline: none;
+  background: var(--bg-root); color: var(--text);
+  box-sizing: border-box; margin-top: 6px;
+}
+.amap-key-input:focus { border-color: var(--accent); }
+.amap-key-input::placeholder { color: var(--text-muted); }
+
+/* Trip narrative */
+.trip-narrative{padding:12px 0;margin-bottom:8px}
+.trip-narrative-name{font-size:18px;font-weight:600;color:var(--text-primary);margin:0 0 4px}
+.trip-narrative-desc{font-size:14px;color:var(--text-secondary);line-height:1.6;margin:0}
+.trip-narrative-loading{font-size:13px;color:var(--text-muted);font-style:italic}
+.trip-narrative-error{font-size:12px;color:var(--danger);margin-top:4px}
+.photo-day-location{font-size:12px;color:var(--accent);margin:0 8px}
+.trip-map-label{background:none!important;border:none!important}
+.trip-map-label span{background:rgba(0,0,0,.7);color:#fff;padding:1px 6px;border-radius:3px;font-size:11px;white-space:nowrap}

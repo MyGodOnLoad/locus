@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import PhotoCard from '../components/PhotoCard';
 import PhotoLightbox from '../components/PhotoLightbox';
 import CorrectionPanel from '../components/CorrectionPanel';
+import TripNarrative from '../components/TripNarrative';
 
 function TripDetailView() {
   var setViewMode = usePhotoStore(function (s) { return s.setViewMode; });
@@ -18,6 +19,7 @@ function TripDetailView() {
   var initRef = useRef(false);
   var _lb = useState(-1), lbIdx = _lb[0], setLbIdx = _lb[1];
   var _cp = useState(false), showCorrection = _cp[0], setShowCorrection = _cp[1];
+  var placeNames = usePhotoStore(function (s) { return s.placeNames; });
 
   if (!trip) {
     return (
@@ -48,6 +50,23 @@ function TripDetailView() {
     return groups;
   }, [photos]);
 
+  // Compute day location summaries from reverse geocoding
+  var dayLocationSummaries = {};
+  Object.keys(dayGroups).forEach(function (dayKey) {
+    var dayPhotos = dayGroups[dayKey];
+    var placeSet = [];
+    var seen = {};
+    for (var i = 0; i < dayPhotos.length; i++) {
+      var dp = dayPhotos[i];
+      if (dp.lat == null || dp.lng == null) continue;
+      var pk = dp.lat.toFixed(4) + ',' + dp.lng.toFixed(4);
+      var pn = placeNames[pk];
+      var label = pn ? (pn.city || pn.district || pn.township || '') : '';
+      if (label && !seen[label]) { seen[label] = true; placeSet.push(label); }
+    }
+    dayLocationSummaries[dayKey] = placeSet.length > 0 ? placeSet.join(' → ') : '';
+  });
+
   var dayKeys = Object.keys(dayGroups).sort(function (a, b) { return a.localeCompare(b); });
 
   // Map init
@@ -76,13 +95,40 @@ function TripDetailView() {
     L.circleMarker([start.lat, start.lng], { radius: 6, color: '#22c55e', fillColor: '#22c55e', fillOpacity: 1 }).addTo(map);
     L.circleMarker([end.lat, end.lng], { radius: 6, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1 }).addTo(map);
 
+    // Place name labels at key trajectory points
+    if (placeNames) {
+      var labelIndices = [0];
+      if (trip.path.length > 1) labelIndices.push(trip.path.length - 1);
+      // Add midpoint if path is long enough
+      if (trip.path.length > 4) labelIndices.push(Math.floor(trip.path.length / 2));
+
+      labelIndices.forEach(function (idx) {
+        var pt = trip.path[idx];
+        var pk = pt.lat.toFixed(4) + ',' + pt.lng.toFixed(4);
+        var pn = placeNames[pk];
+        if (pn) {
+          var label = pn.city || pn.district || pn.township || '';
+          if (label) {
+            L.marker([pt.lat, pt.lng], {
+              icon: L.divIcon({
+                className: 'trip-map-label',
+                html: '<span>' + label + '</span>',
+                iconSize: [80, 20],
+                iconAnchor: [40, 10]
+              })
+            }).addTo(map);
+          }
+        }
+      });
+    }
+
     // Fit bounds
     if (trip.boundingBox) {
       map.fitBounds([[trip.boundingBox.south, trip.boundingBox.west], [trip.boundingBox.north, trip.boundingBox.east]], { padding: [30, 30] });
     } else {
       map.fitBounds(line.getBounds(), { padding: [30, 30] });
     }
-  }, [trip]);
+  }, [trip, placeNames]);
 
   var allPhotos = photos;
 
@@ -101,6 +147,8 @@ function TripDetailView() {
         </div>
       </div>
 
+      <TripNarrative trip={trip} />
+
       <div className="trip-detail-map">
         <div ref={containerRef} className="map-inner" />
       </div>
@@ -112,6 +160,7 @@ function TripDetailView() {
             <div key={dayKey} className="photo-day-group">
               <div className="photo-day-header">
                 <span className="photo-day-date">{dayKey}</span>
+                {dayLocationSummaries[dayKey] ? <span className="photo-day-location">{dayLocationSummaries[dayKey]}</span> : null}
                 <span className="photo-day-count">{dayPhotos.length} {'\u5F20'}</span>
               </div>
               <div className="photo-day-grid">

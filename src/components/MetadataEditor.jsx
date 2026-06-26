@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { savePhotoOverride, applyMetadataOverride, getMetadata } from '../services/metadataStore';
-import { geocodeAddress, getConfiguredAmapKey, saveStoredAmapKey } from '../services/geocoder';
+import { geocodeAddress } from '../services/geocoder';
+import { getConfiguredAmapKey } from '../services/amapConfig.js';
 import { usePhotoStore } from '../store/photoStore';
 import LocationPreviewMap from './LocationPreviewMap';
 
@@ -34,7 +35,6 @@ function MetadataEditor(props) {
   var _c = useState(photo.lat != null ? String(photo.lat) : ''), lat = _c[0], setLat = _c[1];
   var _d = useState(photo.lng != null ? String(photo.lng) : ''), lng = _d[0], setLng = _d[1];
   var _e = useState(''), address = _e[0], setAddress = _e[1];
-  var _f = useState(getConfiguredAmapKey()), amapKey = _f[0], setAmapKey = _f[1];
   var _g = useState(''), geocodeMsg = _g[0], setGeocodeMsg = _g[1];
   var _h = useState(false), geocoding = _h[0], setGeocoding = _h[1];
   var _i = useState(false), saving = _i[0], setSaving = _i[1];
@@ -48,9 +48,8 @@ function MetadataEditor(props) {
   function handleGeocode() {
     if (geocoding) return;
     setGeocodeMsg('');
-    saveStoredAmapKey(amapKey.trim());
     setGeocoding(true);
-    geocodeAddress(address, amapKey).then(function (result) {
+    geocodeAddress(address, getConfiguredAmapKey()).then(function (result) {
       setLat(String(result.lat));
       setLng(String(result.lng));
       setGeocodeMsg('已定位：' + (result.formattedAddress || address));
@@ -59,12 +58,6 @@ function MetadataEditor(props) {
       setGeocodeMsg(e.message || String(e));
       setGeocoding(false);
     });
-  }
-
-  function handleAmapKeyChange(e) {
-    var nextKey = e.target.value;
-    setAmapKey(nextKey);
-    saveStoredAmapKey(nextKey.trim());
   }
 
   function handleSave() {
@@ -116,13 +109,6 @@ function MetadataEditor(props) {
             />
             <button onClick={handleGeocode} disabled={geocoding}>{geocoding ? '解析中...' : '解析地址'}</button>
           </div>
-          <input
-            className="metadata-key-input"
-            type="password"
-            placeholder="高德 Web 服务 Key"
-            value={amapKey}
-            onChange={handleAmapKeyChange}
-          />
           <div className="metadata-coord-row">
             <input type="number" step="0.000001" placeholder="纬度" value={lat} onChange={function (e) { setLat(e.target.value); }} />
             <input type="number" step="0.000001" placeholder="经度" value={lng} onChange={function (e) { setLng(e.target.value); }} />

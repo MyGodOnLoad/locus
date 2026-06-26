@@ -1,3 +1,5 @@
+import { getConfiguredAmapKey, getStoredAmapKey, saveStoredAmapKey } from './amapConfig.js';
+
 var AMAP_GEOCODE_URL = 'https://restapi.amap.com/v3/geocode/geo';
 
 export function parseAmapLocation(location) {
@@ -27,26 +29,6 @@ export function parseAmapGeocodeResponse(data) {
     lng: point.lng,
     lat: point.lat
   };
-}
-
-export function getStoredAmapKey() {
-  if (typeof window === 'undefined' || !window.localStorage) return '';
-  return window.localStorage.getItem('locus.amapKey') || '';
-}
-
-export function saveStoredAmapKey(key) {
-  if (typeof window === 'undefined' || !window.localStorage) return;
-  if (key) window.localStorage.setItem('locus.amapKey', key);
-  else window.localStorage.removeItem('locus.amapKey');
-}
-
-export function getConfiguredAmapKey() {
-  var stored = getStoredAmapKey();
-  if (stored) return stored;
-  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_AMAP_KEY) {
-    return import.meta.env.VITE_AMAP_KEY;
-  }
-  return '';
 }
 
 export async function geocodeAddress(address, key) {

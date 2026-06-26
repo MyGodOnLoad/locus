@@ -1,6 +1,5 @@
 var METADATA_FILE = '.locus-metadata.json';
 var dirHandle = null;
-var desktopDirPath = null;
 var metadata = { version: 1, photos: {} };
 
 function parseDate(value) {
@@ -11,12 +10,6 @@ function parseDate(value) {
 
 export function setMetadataDirectory(handle) {
   dirHandle = handle || null;
-  desktopDirPath = null;
-}
-
-export function setDesktopMetadataDirectory(path) {
-  desktopDirPath = path || null;
-  dirHandle = null;
 }
 
 export function setMetadata(nextMetadata) {
@@ -120,12 +113,6 @@ export async function savePhotoOverride(photo, values) {
   var override = buildOverride(photo, values);
   if (override) metadata.photos[photo.path] = override;
   else delete metadata.photos[photo.path];
-
-  if (desktopDirPath) {
-    var desktop = await import('./desktopBridge');
-    await desktop.saveDesktopMetadata(desktopDirPath, metadata);
-    return metadata.photos[photo.path];
-  }
 
   if (!dirHandle) throw new Error('未打开可写文件夹，无法保存校准信息。');
 

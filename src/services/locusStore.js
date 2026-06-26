@@ -1,6 +1,5 @@
 var METADATA_FILE = '.locus-metadata.json';
 var dirHandle = null;
-var desktopDirPath = null;
 
 var EMPTY_LOCUS = { version: 1, residenceOverrides: {}, tripOverrides: {}, heartedPhotos: [] };
 
@@ -13,11 +12,6 @@ export function getLocusMetadata() {
 export function setLocusDirectory(handle) {
   dirHandle = handle || null;
   desktopDirPath = null;
-}
-
-export function setLocusDesktopDirectory(path) {
-  desktopDirPath = path || null;
-  dirHandle = null;
 }
 
 /* Merge locus section into an existing metadata object (from metadataStore) */
@@ -44,23 +38,6 @@ export async function loadLocusMetadata(existingMeta) {
 /* Save locus metadata — merges into full metadata file */
 export async function saveLocusMetadata(locusData) {
   cached = locusData || JSON.parse(JSON.stringify(EMPTY_LOCUS));
-
-  if (desktopDirPath) {
-    try {
-      var desktop = await import('./desktopBridge');
-      var existing = await desktop.loadDesktopMetadata(desktopDirPath);
-      var merged = Object.assign({}, existing || { version: 1, photos: {} }, {
-        residenceOverrides: cached.residenceOverrides,
-        tripOverrides: cached.tripOverrides,
-        heartedPhotos: cached.heartedPhotos
-      });
-      // TODO: use tmp-then-rename atomic write (requires backend support)
-      await desktop.saveDesktopMetadata(desktopDirPath, merged);
-    } catch (e) {
-      console.error('[locusStore] Failed to save via desktop bridge:', e);
-    }
-    return;
-  }
 
   if (!dirHandle) {
     console.warn('[locusStore] No writable directory handle');
@@ -109,4 +86,4 @@ export async function saveLocusMetadata(locusData) {
   }
 }
 
-export default { getLocusMetadata, loadLocusMetadata, saveLocusMetadata, setLocusDirectory, setLocusDesktopDirectory };
+export default { getLocusMetadata, loadLocusMetadata, saveLocusMetadata, setLocusDirectory };

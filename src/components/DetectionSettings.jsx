@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { usePhotoStore } from '../store/photoStore';
+import { getConfiguredAmapKey, saveStoredAmapKey } from '../services/amapConfig.js';
+import { getLLMConfig, saveLLMConfig } from '../services/llmNarrator.js';
 
 var FIELD_DEFS = [
   { group: '居住期检测', key: 'spatial.clusterEps', label: '聚类半径 (km)', min: 0.1, max: 5.0, step: 0.1, unit: 'km' },
@@ -27,6 +30,8 @@ function setNested(obj, path, value) {
 function DetectionSettings(props) {
   var onClose = props.onClose;
   var params = usePhotoStore(function (s) { return s.detectionParams; });
+  var _ak = useState(getConfiguredAmapKey()), amapKey = _ak[0], setAmapKey = _ak[1];
+  var _llm = useState(getLLMConfig()), llmConfig = _llm[0], setLLMConfig = _llm[1];
   var setDetectionParams = usePhotoStore(function (s) { return s.setDetectionParams; });
 
   var groups = {};
@@ -39,6 +44,19 @@ function DetectionSettings(props) {
     var next = JSON.parse(JSON.stringify(params));
     setNested(next, key, value);
     setDetectionParams(next);
+  }
+
+  function handleAmapKeyChange(e) {
+    var v = e.target.value;
+    setAmapKey(v);
+    saveStoredAmapKey(v.trim());
+  }
+
+  function handleLLMChange(field, value) {
+    var next = Object.assign({}, llmConfig, {});
+    next[field] = value;
+    setLLMConfig(next);
+    saveLLMConfig(next);
   }
 
   function handleReset() {
@@ -60,6 +78,58 @@ function DetectionSettings(props) {
         </div>
         <div className="detection-settings-body">
           <p className="detection-settings-hint">调整参数后即时生效。修改幅度过大可能导致居住期和旅行检测结果剧烈变化。</p>
+          <div className="detection-settings-group">
+            <div className="detection-settings-group-title">高德地图 API</div>
+            <p className="detection-settings-hint" style={{marginTop: 4}}>用于逆地理编码（坐标→地名）和地址解析。不填则仅显示坐标。</p>
+            <input
+              type="password"
+              className="amap-key-input"
+              placeholder="输入高德 Web 服务 Key"
+              value={amapKey}
+              onChange={handleAmapKeyChange}
+            />
+          </div>
+          <div className="detection-settings-group">
+            <div className="detection-settings-group-title">LLM 旅行叙事</div>
+            <p className="detection-settings-hint" style={{marginTop: 4}}>AI 自动生成旅行名称和描述。使用 OpenAI 兼容 API。留空则不启用。</p>
+            <div className="detection-field">
+              <div className="detection-field-header">
+                <label className="detection-field-label">API Key</label>
+              </div>
+              <input
+                type="password"
+                className="amap-key-input"
+                placeholder="sk-..."
+                value={llmConfig.apiKey}
+                onChange={function (e) { handleLLMChange('apiKey', e.target.value); }}
+              />
+            </div>
+            <div className="detection-field">
+              <div className="detection-field-header">
+                <label className="detection-field-label">接口地址</label>
+                <span className="detection-field-value">{llmConfig.endpoint}</span>
+              </div>
+              <input
+                type="text"
+                className="amap-key-input"
+                placeholder="https://api.openai.com/v1/chat/completions"
+                value={llmConfig.endpoint}
+                onChange={function (e) { handleLLMChange('endpoint', e.target.value); }}
+              />
+            </div>
+            <div className="detection-field">
+              <div className="detection-field-header">
+                <label className="detection-field-label">模型</label>
+              </div>
+              <input
+                type="text"
+                className="amap-key-input"
+                placeholder="gpt-4o-mini"
+                value={llmConfig.model}
+                onChange={function (e) { handleLLMChange('model', e.target.value); }}
+              />
+            </div>
+          </div>
           {Object.keys(groups).map(function (groupName) {
             return (
               <div key={groupName} className="detection-settings-group">
